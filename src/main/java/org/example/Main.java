@@ -19,7 +19,6 @@ import java.util.Date;
 
 public class Main {
     public static void main(String[] args) throws IOException, ParseException, InterruptedException {
-//        Scanner scanner = new Scanner(System.in);
         String code = args[0];
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -32,10 +31,15 @@ public class Main {
     }
 
     public static String getTreeInfo(String dateString) throws IOException, InterruptedException {
-        var client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(String.format("https://www.cbr.ru/scripts/XML_daily.asp?date_req=%s", dateString))).build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(String.format("https://www.cbr.ru/scripts/XML_daily.asp?date_req=%s", dateString))).build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        }
+        catch (InterruptedException exception){
+            throw new InterruptedIOException("Exception with api. Check api and date");
+        }
     }
 
     public static String getCurrencyInfo(String dateString, String code) throws IOException, InterruptedException {
@@ -43,8 +47,14 @@ public class Main {
         Parser parser = Parser.getInstance();
         parser.setBody(body);
         int curPos = parser.getIdByKey(ParseTags.CHARCODE, code);
+
+        if (curPos == -1){
+            throw new RuntimeException("Incorrect code currency");
+        }
+
         Elements elements = parser.getElements(ParseTags.VALUTE);
         Element element = elements.get(curPos);
+
 
         String name = parser.getValueById(element, ParseTags.NAME).text();
         String charCode = parser.getValueById(element, ParseTags.CHARCODE).text();

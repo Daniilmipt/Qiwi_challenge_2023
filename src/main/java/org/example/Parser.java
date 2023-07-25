@@ -41,6 +41,7 @@ public class Parser {
     }
 
     public int getIdByKey(ParseTags tag, String code){
+
         Elements elements = getElements(tag);
         for (int i = 0; i < elements.size(); i++) {
             if (elements.get(i).text().equals(code)){
